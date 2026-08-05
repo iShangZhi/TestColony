@@ -1,8 +1,8 @@
-import { Controller, Post, Get, Patch, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { LoginRequest, RegisterRequest } from '@testcolony/shared-types';
+import type { LoginRequest, RegisterRequest } from '@testcolony/shared-types';
 
 @ApiTags('Auth')
 @Controller('auth')

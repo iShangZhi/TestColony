@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateProjectRequest, UpdateProjectRequest } from '@testcolony/shared-types';
+import type { CreateProjectRequest, UpdateProjectRequest } from '@testcolony/shared-types';
 
 @Injectable()
 export class ProjectService {
@@ -52,7 +52,7 @@ export class ProjectService {
 
   async update(id: string, dto: UpdateProjectRequest) {
     await this.getById(id);
-    return this.prisma.project.update({ where: { id }, data: dto });
+    return this.prisma.project.update({ where: { id }, data: dto as any });
   }
 
   async archive(id: string) {

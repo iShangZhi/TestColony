@@ -2,7 +2,11 @@
   "extends": "@testcolony/ts-config/nest.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "strict": false,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]
