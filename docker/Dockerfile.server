@@ -1,0 +1,33 @@
+FROM node:20-alpine AS base
+
+RUN npm install -g pnpm@9
+
+FROM base AS deps
+WORKDIR /app
+
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/server/package.json ./apps/server/
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/ts-config/package.json ./packages/ts-config/
+
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN pnpm --filter @testcolony/server build
+
+FROM base AS runner
+WORKDIR /app
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/server/dist ./apps/server/dist
+COPY --from=builder /app/apps/server/package.json ./apps/server/
+COPY --from=builder /app/apps/server/src/prisma ./apps/server/src/prisma
+COPY --from=builder /app/packages ./packages
+
+EXPOSE 4000
+CMD ["node", "apps/server/dist/main.js"]

@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Database
+*.db
+*.db-journal
+prisma/migrations/*/migration_lock.toml
+
+# Uploads
+uploads/
+
+# Turbo
+.turbo/
+
+# Claude Code
+.claude/sessions/
+.claude/scheduled_tasks.json
+
+# Docker
+docker-compose.override.yml

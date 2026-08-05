@@ -1,0 +1,393 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// USER & AUTH
+// ============================================================
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  displayName  String   @map("display_name") @db.VarChar(100)
+  avatarUrl    String?  @map("avatar_url") @db.VarChar(500)
+  role         String   @default("member") @db.VarChar(20) // admin, member, viewer
+  settings     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  ownedProjects    Project[]         @relation("ProjectOwner")
+  projectMembers   ProjectMember[]
+  prds             Prd[]
+  testCases        TestCase[]        @relation("TestCaseCreator")
+  testRuns         TestRun[]         @relation("TestRunTrigger")
+  userInteractions UserInteraction[] @relation("InteractionResponder")
+  auditLogs        AuditLog[]
+
+  @@map("users")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String   @default("member") @db.VarChar(20) // owner, admin, member, viewer
+  joinedAt  DateTime @default(now()) @map("joined_at") @db.Timestamptz()
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+// ============================================================
+// PROJECT
+// ============================================================
+
+model Project {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @db.VarChar(200)
+  slug          String   @unique @db.VarChar(200)
+  description   String?  @db.Text
+  ownerId       String   @map("owner_id") @db.Uuid
+  repositoryUrl String?  @map("repository_url") @db.VarChar(500)
+  settings      Json     @default("{}")
+  status        String   @default("active") @db.VarChar(20) // active, archived, deleted
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  owner           User              @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members         ProjectMember[]
+  prds            Prd[]
+  testSuites      TestSuite[]
+  testRuns        TestRun[]
+  agentSessions   AgentSession[]
+  agentDefinitions AgentDefinition[]
+  skillDefinitions SkillDefinition[]
+  auditLogs       AuditLog[]
+
+  @@map("projects")
+}
+
+// ============================================================
+// PRD
+// ============================================================
+
+model Prd {
+  id                  String   @id @default(uuid()) @db.Uuid
+  projectId           String   @map("project_id") @db.Uuid
+  title               String   @db.VarChar(300)
+  version             String   @default("1.0") @db.VarChar(50)
+  content             String   @db.Text
+  filePath            String?  @map("file_path") @db.VarChar(500)
+  parsedRequirements  Json     @default("[]") @map("parsed_requirements")
+  status              String   @default("draft") @db.VarChar(20) // draft, analyzing, ready, archived
+  createdBy           String?  @map("created_by") @db.Uuid
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator   User?      @relation(fields: [createdBy], references: [id])
+  testCases TestCase[]
+
+  @@map("prds")
+}
+
+// ============================================================
+// TEST SUITE
+// ============================================================
+
+model TestSuite {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  name        String   @db.VarChar(200)
+  description String?  @db.Text
+  parentId    String?  @map("parent_id") @db.Uuid
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent    TestSuite?  @relation("SuiteHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  TestSuite[] @relation("SuiteHierarchy")
+  testCases TestCase[]
+  testRuns  TestRun[]
+
+  @@map("test_suites")
+}
+
+// ============================================================
+// TEST CASE
+// ============================================================
+
+model TestCase {
+  id               String   @id @default(uuid()) @db.Uuid
+  testSuiteId      String   @map("test_suite_id") @db.Uuid
+  prdId            String?  @map("prd_id") @db.Uuid
+  externalId       String?  @map("external_id") @db.VarChar(50)
+  title            String   @db.VarChar(300)
+  description      String?  @db.Text
+  preconditions    String?  @db.Text
+  testSteps        Json     @default("[]") @map("test_steps")
+  expectedResult   String?  @map("expected_result") @db.Text
+  priority         String   @default("P2") @db.VarChar(10) // P0, P1, P2, P3
+  category         String?  @db.VarChar(50)
+  tags             String[] @default([])
+  automationStatus String   @default("manual") @map("automation_status") @db.VarChar(20)
+  status           String   @default("draft") @db.VarChar(20) // draft, review, approved, deprecated
+  source           String   @default("manual") @db.VarChar(20) // manual, ai_generated, imported
+  metadata         Json     @default("{}")
+  createdBy        String?  @map("created_by") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  testSuite TestSuite    @relation(fields: [testSuiteId], references: [id], onDelete: Cascade)
+  prd       Prd?         @relation(fields: [prdId], references: [id], onDelete: SetNull)
+  creator   User?        @relation("TestCaseCreator", fields: [createdBy], references: [id])
+  results   TestResult[]
+
+  @@map("test_cases")
+}
+
+// ============================================================
+// TEST RUN
+// ============================================================
+
+model TestRun {
+  id             String    @id @default(uuid()) @db.Uuid
+  projectId      String    @map("project_id") @db.Uuid
+  testSuiteId    String?   @map("test_suite_id") @db.Uuid
+  name           String?   @db.VarChar(200)
+  triggerType    String    @map("trigger_type") @db.VarChar(20) // manual, scheduled, ci_cd, ai_agent
+  status         String    @default("pending") @db.VarChar(20) // pending, running, completed, failed, cancelled
+  startedAt      DateTime? @map("started_at") @db.Timestamptz()
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz()
+  totalCases     Int       @default(0) @map("total_cases")
+  passedCases    Int       @default(0) @map("passed_cases")
+  failedCases    Int       @default(0) @map("failed_cases")
+  skippedCases   Int       @default(0) @map("skipped_cases")
+  errorCases     Int       @default(0) @map("error_cases")
+  durationMs     Int?      @map("duration_ms")
+  reportPath     String?   @map("report_path") @db.VarChar(500)
+  triggeredBy    String?   @map("triggered_by") @db.Uuid
+  agentSessionId String?   @map("agent_session_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testSuite    TestSuite?   @relation(fields: [testSuiteId], references: [id], onDelete: SetNull)
+  triggerUser  User?        @relation("TestRunTrigger", fields: [triggeredBy], references: [id])
+  agentSession AgentSession? @relation(fields: [agentSessionId], references: [id])
+  results      TestResult[]
+
+  @@map("test_runs")
+}
+
+// ============================================================
+// TEST RESULT
+// ============================================================
+
+model TestResult {
+  id           String    @id @default(uuid()) @db.Uuid
+  testRunId    String    @map("test_run_id") @db.Uuid
+  testCaseId   String    @map("test_case_id") @db.Uuid
+  status       String    @db.VarChar(20) // passed, failed, skipped, error
+  durationMs   Int?      @map("duration_ms")
+  errorMessage String?   @map("error_message") @db.Text
+  stackTrace   String?   @map("stack_trace") @db.Text
+  screenshots  String[]  @default([])
+  logs         String?   @db.Text
+  aiAnalysis   String?   @map("ai_analysis") @db.Text
+  retryCount   Int       @default(0) @map("retry_count")
+  executedAt   DateTime? @map("executed_at") @db.Timestamptz()
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  testRun  TestRun  @relation(fields: [testRunId], references: [id], onDelete: Cascade)
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@map("test_results")
+}
+
+// ============================================================
+// AGENT DEFINITION (stored in DB for quick access; source of truth is .md files)
+// ============================================================
+
+model AgentDefinition {
+  id            String   @id @default(uuid()) @db.Uuid
+  projectId     String   @map("project_id") @db.Uuid
+  name          String   @db.VarChar(100)
+  description   String?  @db.Text
+  systemPrompt  String   @map("system_prompt") @db.Text
+  model         String   @default("deepseek-chat") @db.VarChar(50)
+  temperature   Float    @default(0.3)
+  maxTokens     Int      @default(8192) @map("max_tokens")
+  tools         String[] @default([])
+  hooksConfig   Json     @default("{}") @map("hooks_config")
+  subagentConfig Json    @default("{}") @map("subagent_config")
+  memoryMode    String   @default("session") @map("memory_mode") @db.VarChar(20)
+  filePath      String?  @map("file_path") @db.VarChar(500)
+  status        String   @default("active") @db.VarChar(20)
+  version       Int      @default(1)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  project  Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skills   AgentToSkill[]
+  sessions AgentSession[]
+
+  @@unique([projectId, name])
+  @@map("agent_definitions")
+}
+
+// ============================================================
+// SKILL DEFINITION
+// ============================================================
+
+model SkillDefinition {
+  id                       String   @id @default(uuid()) @db.Uuid
+  projectId                String   @map("project_id") @db.Uuid
+  name                     String   @db.VarChar(100)
+  description              String?  @db.Text
+  body                     String   @db.Text
+  tools                    String[] @default([])
+  contextMode              String   @default("inline") @map("context_mode") @db.VarChar(20) // inline, fork
+  disableModelInvocation   Boolean  @default(false) @map("disable_model_invocation")
+  filePath                 String?  @map("file_path") @db.VarChar(500)
+  status                   String   @default("active") @db.VarChar(20)
+  version                  Int      @default(1)
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  agents  AgentToSkill[]
+
+  @@unique([projectId, name])
+  @@map("skill_definitions")
+}
+
+// ============================================================
+// AGENT <-> SKILL (many-to-many)
+// ============================================================
+
+model AgentToSkill {
+  id         String   @id @default(uuid()) @db.Uuid
+  agentId    String   @map("agent_id") @db.Uuid
+  skillId    String   @map("skill_id") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz()
+
+  agent AgentDefinition @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  skill SkillDefinition @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, skillId])
+  @@map("agent_to_skills")
+}
+
+// ============================================================
+// AGENT SESSION (runtime)
+// ============================================================
+
+model AgentSession {
+  id                 String    @id @default(uuid()) @db.Uuid
+  projectId          String    @map("project_id") @db.Uuid
+  agentDefinitionId  String?   @map("agent_definition_id") @db.Uuid
+  parentSessionId    String?   @map("parent_session_id") @db.Uuid
+  name               String?   @db.VarChar(200)
+  agentType          String    @map("agent_type") @db.VarChar(50) // main_agent_a, main_agent_b, sub_agent
+  status             String    @default("initializing") @db.VarChar(20)
+  model              String?   @db.VarChar(50)
+  tokenCount         Int       @default(0) @map("token_count")
+  maxTokens          Int       @default(128000) @map("max_tokens")
+  messages           Json      @default("[]")
+  contextSnapshot    Json      @default("{}") @map("context_snapshot")
+  summary            String?   @db.Text
+  startedAt          DateTime? @map("started_at") @db.Timestamptz()
+  completedAt        DateTime? @map("completed_at") @db.Timestamptz()
+  durationMs         Int?      @map("duration_ms")
+  errorMessage       String?   @map("error_message") @db.Text
+  metadata           Json      @default("{}")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  agentDefinition AgentDefinition? @relation(fields: [agentDefinitionId], references: [id])
+  parentSession   AgentSession?    @relation("SubSessions", fields: [parentSessionId], references: [id])
+  childSessions   AgentSession[]   @relation("SubSessions")
+  messages_log    AgentMessage[]
+  interactions    UserInteraction[]
+  testRuns        TestRun[]
+
+  @@map("agent_sessions")
+}
+
+// ============================================================
+// AGENT MESSAGE
+// ============================================================
+
+model AgentMessage {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionId    String   @map("session_id") @db.Uuid
+  role         String   @db.VarChar(20) // system, user, assistant, tool
+  content      String?  @db.Text
+  toolCalls    Json?    @map("tool_calls")
+  toolCallId   String?  @map("tool_call_id") @db.VarChar(100)
+  toolName     String?  @map("tool_name") @db.VarChar(100)
+  tokenCount   Int?     @map("token_count")
+  sequenceNum  Int      @map("sequence_num")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  session AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("agent_messages")
+}
+
+// ============================================================
+// USER INTERACTION (HITL)
+// ============================================================
+
+model UserInteraction {
+  id           String    @id @default(uuid()) @db.Uuid
+  sessionId    String    @map("session_id") @db.Uuid
+  type         String    @db.VarChar(30) // confirmation, clarification, approval, input
+  priority     String    @default("normal") @db.VarChar(10) // low, normal, high, critical
+  title        String?   @db.VarChar(300)
+  message      String    @db.Text
+  contextData  Json      @default("{}") @map("context_data")
+  options      Json?     // Interaction options
+  response     String?   @db.Text
+  respondedBy  String?   @map("responded_by") @db.Uuid
+  respondedAt  DateTime? @map("responded_at") @db.Timestamptz()
+  status       String    @default("pending") @db.VarChar(20) // pending, responded, timeout, cancelled
+  timeoutAt    DateTime? @map("timeout_at") @db.Timestamptz()
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  session   AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  responder User?        @relation("InteractionResponder", fields: [respondedBy], references: [id])
+
+  @@map("user_interactions")
+}
+
+// ============================================================
+// AUDIT LOG
+// ============================================================
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  projectId  String   @map("project_id") @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String?  @map("entity_type") @db.VarChar(50)
+  entityId   String?  @map("entity_id") @db.Uuid
+  details    Json     @default("{}")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
