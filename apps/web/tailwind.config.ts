@@ -21,10 +21,10 @@ const config: Config = {
           DEFAULT: '#EF4444',
         },
         surface: {
-          DEFAULT: '#1E293B',
-          dark: '#0F172A',
-          card: '#334155',
-          border: '#475569',
+          DEFAULT: '#0d1320',
+          dark: '#0a0f1a',
+          card: '#141e30',
+          border: '#1a2540',
         },
         status: {
           passed: '#22C55E',
@@ -39,6 +39,7 @@ const config: Config = {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       fontSize: {
+        '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
         xs: '0.75rem',
         sm: '0.875rem',
         base: '1rem',
