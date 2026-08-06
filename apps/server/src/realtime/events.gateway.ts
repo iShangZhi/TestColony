@@ -88,6 +88,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { interactionId: string; response: string; userId: string },
   ) {
     this.eventEmitter.emit('interaction:respond', data);
+    this.eventEmitter.emit('interaction:responded', data); // Fix: also emit 'responded' for InteractionService
   }
 
   @SubscribeMessage('interaction:skip')

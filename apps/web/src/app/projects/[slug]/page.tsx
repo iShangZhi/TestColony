@@ -50,7 +50,7 @@ export default function ProjectDetailPage() {
               <Layers size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Shop API</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Shop API</h1>
               <p className="text-xs text-slate-400">电商平台后端服务 · 3 个 PRD · 142 个用例</p>
             </div>
           </div>
@@ -72,7 +72,7 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-1 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
+      <div className="flex items-center gap-1 bg-surface-DEFAULT/70 rounded-xl p-1 border border-surface-border/70">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -93,6 +93,9 @@ export default function ProjectDetailPage() {
         })}
       </div>
 
+      {/* Tab Content */}
+      {activeTab === 'overview' && (<>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-4">
         {stats.map((stat) => {
@@ -100,10 +103,10 @@ export default function ProjectDetailPage() {
           return (
             <div
               key={stat.label}
-              className="group bg-slate-800/60 rounded-xl p-5 border border-slate-700/50 hover:border-slate-600/50 transition-all hover:shadow-lg"
+              className="group bg-surface-DEFAULT/80 rounded-xl p-5 border border-surface-border/70 hover:border-slate-600/50 transition-all hover:shadow-lg"
             >
               <div className="flex items-center justify-between mb-3">
-                <div className="w-9 h-9 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
+                <div className="w-9 h-9 rounded-lg bg-surface-card/70 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
                   <Icon size={17} className="text-slate-300" />
                 </div>
                 {stat.trend && (
@@ -122,8 +125,8 @@ export default function ProjectDetailPage() {
       {/* Two Column Layout */}
       <div className="grid grid-cols-3 gap-6">
         {/* Recent Test Runs */}
-        <div className="col-span-2 bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-700/50 flex items-center justify-between">
+        <div className="col-span-2 bg-surface-DEFAULT/80 rounded-xl border border-surface-border/70 overflow-hidden">
+          <div className="px-5 py-4 border-b border-surface-border/70 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <Play size={16} className="text-slate-400" />
               最近执行记录
@@ -132,12 +135,12 @@ export default function ProjectDetailPage() {
               查看全部 →
             </Link>
           </div>
-          <div className="divide-y divide-slate-700/30">
+          <div className="divide-y divide-gray-100 dark:divide-slate-700/30">
             {recentRuns.map((run) => (
               <Link
                 key={run.id}
                 href={`runs/${run.id}`}
-                className="flex items-center px-5 py-3.5 hover:bg-slate-700/30 transition-colors group"
+                className="flex items-center px-5 py-3.5 hover:bg-surface-card/50 transition-colors group"
               >
                 <div className="flex-1 flex items-center gap-4 min-w-0">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
@@ -166,7 +169,7 @@ export default function ProjectDetailPage() {
 
         {/* Quick Actions */}
         <div className="space-y-4">
-          <div className="bg-slate-800/60 rounded-xl p-5 border border-slate-700/50 hover:border-violet-700/30 transition-all group">
+          <div className="bg-surface-DEFAULT/80 rounded-xl p-5 border border-surface-border/70 hover:border-violet-700/30 transition-all group">
             <div className="w-9 h-9 rounded-lg bg-violet-500/20 flex items-center justify-center mb-3 group-hover:bg-violet-500/30 transition-colors">
               <Bot size={17} className="text-violet-400" />
             </div>
@@ -179,7 +182,7 @@ export default function ProjectDetailPage() {
             </button>
           </div>
 
-          <div className="bg-slate-800/60 rounded-xl p-5 border border-slate-700/50 hover:border-emerald-700/30 transition-all group">
+          <div className="bg-surface-DEFAULT/80 rounded-xl p-5 border border-surface-border/70 hover:border-emerald-700/30 transition-all group">
             <div className="w-9 h-9 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-3 group-hover:bg-emerald-500/30 transition-colors">
               <Play size={17} className="text-emerald-400" />
             </div>
@@ -193,6 +196,38 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       </div>
+
+      </>)}
+      {/* Other tab placeholders with links */}
+      {activeTab === 'prds' && (
+        <div className="bg-surface-DEFAULT/80 rounded-xl border border-surface-border/70 p-12 text-center">
+          <FileText size={40} className="text-slate-600 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm mb-4">管理和创建 PRD 需求文档</p>
+          <Link href="prds" className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600/20 text-violet-300 rounded-lg text-sm hover:bg-violet-600/30 transition-colors">
+            进入 PRD 管理 →</Link>
+        </div>
+      )}
+      {activeTab === 'cases' && (
+        <div className="bg-surface-DEFAULT/80 rounded-xl border border-surface-border/70 p-12 text-center">
+          <TestTube size={40} className="text-slate-600 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm mb-1">142 个测试用例 · 85 已自动化</p>
+          <p className="text-slate-600 text-xs">选择 PRD 后使用 AI 生成测试用例</p>
+        </div>
+      )}
+      {activeTab === 'agents' && (
+        <div className="bg-surface-DEFAULT/80 rounded-xl border border-surface-border/70 p-12 text-center">
+          <Bot size={40} className="text-slate-600 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm mb-1">5 个 Agent 配置</p>
+          <p className="text-slate-600 text-xs">主 Agent A + 主 Agent B + 3 个子 Agent</p>
+        </div>
+      )}
+      {activeTab === 'runs' && (
+        <div className="bg-surface-DEFAULT/80 rounded-xl border border-surface-border/70 p-12 text-center">
+          <Play size={40} className="text-slate-600 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm mb-1">28 次执行记录</p>
+          <p className="text-slate-600 text-xs">最近通过率: 94.2%</p>
+        </div>
+      )}
     </div>
   );
 }

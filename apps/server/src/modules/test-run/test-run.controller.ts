@@ -28,12 +28,12 @@ export class TestRunController {
   async start(
     @Param('projectId') projectId: string,
     @Req() req: any,
-    @Body() dto: { suiteIds: string[]; agent?: string; options?: any },
+    @Body() dto: { suiteIds?: string[]; agent?: string; options?: any },
   ) {
     const result = await this.executionOrchestrator.startTestRun(
       projectId,
       req.user.sub,
-      dto.options || { suiteIds: dto.suiteIds },
+      { suiteIds: dto.suiteIds || [], ...(dto.options || {}) },
     );
     return result;
   }

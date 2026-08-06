@@ -24,7 +24,7 @@ export default function SkillsPage() {
     <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Skill 管理</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Skill 管理</h1>
           <p className="text-sm text-slate-400 mt-1">管理和配置可复用的 Agent 技能定义</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-lg text-sm font-medium shadow-lg shadow-violet-500/25 transition-all">
@@ -38,14 +38,14 @@ export default function SkillsPage() {
         <input
           type="text" placeholder="搜索 Skill..."
           value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-violet-500/50"
+          className="w-full pl-9 pr-4 py-2 bg-surface-DEFAULT/80 border border-surface-border/70 rounded-lg text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-violet-500/50"
         />
       </div>
 
       {/* Skill Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map(skill => (
-          <div key={skill.id} className="bg-slate-800/60 rounded-xl p-5 border border-slate-700/50 hover:border-slate-600/50 transition-all group">
+          <div key={skill.id} className="bg-surface-DEFAULT/80 rounded-xl p-5 border border-surface-border/70 hover:border-slate-600/50 transition-all group">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center">
@@ -53,7 +53,7 @@ export default function SkillsPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-white font-mono">{skill.name}</h3>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-400">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-card/70 text-slate-400">
                     {skill.context === 'inline' ? 'inline' : 'fork'}
                   </span>
                 </div>
@@ -85,7 +85,7 @@ export default function SkillsPage() {
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {skill.tools.map(t => (
-                    <span key={t} className="px-2 py-0.5 bg-slate-700/50 text-slate-400 rounded text-[10px] font-mono border border-slate-700">
+                    <span key={t} className="px-2 py-0.5 bg-surface-card/70 text-slate-400 rounded text-[10px] font-mono border border-slate-700">
                       {t}
                     </span>
                   ))}

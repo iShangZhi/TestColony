@@ -6,48 +6,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          DEFAULT: '#7C3AED',
-          dark: '#6D28D9',
-          light: '#A78BFA',
-        },
-        secondary: {
-          DEFAULT: '#059669',
-        },
-        accent: {
-          DEFAULT: '#F59E0B',
-        },
-        danger: {
-          DEFAULT: '#EF4444',
-        },
+        // Semantic theme colors - values come from CSS variables
         surface: {
-          DEFAULT: '#0d1320',
-          dark: '#0a0f1a',
-          card: '#141e30',
-          border: '#1a2540',
+          DEFAULT: 'rgb(var(--color-surface) / <alpha-value>)',
+          dark: 'rgb(var(--color-surface-dark) / <alpha-value>)',
+          card: 'rgb(var(--color-surface-card) / <alpha-value>)',
+          border: 'rgb(var(--color-surface-border) / <alpha-value>)',
+          hover: 'rgb(var(--color-surface-hover) / <alpha-value>)',
         },
+        app: {
+          bg: 'rgb(var(--color-bg) / <alpha-value>)',
+          nav: 'rgb(var(--color-bg-nav) / <alpha-value>)',
+          input: 'rgb(var(--color-bg-input) / <alpha-value>)',
+        },
+        // Accent colors (same in both themes)
+        primary: { DEFAULT: '#7C3AED', dark: '#6D28D9', light: '#A78BFA' },
+        secondary: { DEFAULT: '#059669' },
+        accent: { DEFAULT: '#F59E0B' },
+        danger: { DEFAULT: '#EF4444' },
         status: {
-          passed: '#22C55E',
-          failed: '#EF4444',
-          skipped: '#F59E0B',
-          running: '#3B82F6',
-          pending: '#64748B',
+          passed: '#22C55E', failed: '#EF4444', skipped: '#F59E0B',
+          running: '#3B82F6', pending: '#64748B',
         },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-      },
-      fontSize: {
-        '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
-        xs: '0.75rem',
-        sm: '0.875rem',
-        base: '1rem',
-        lg: '1.125rem',
-        xl: '1.25rem',
-        '2xl': '1.5rem',
-        '3xl': '1.875rem',
-        '4xl': '2.25rem',
       },
     },
   },
