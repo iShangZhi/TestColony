@@ -1,30 +1,9 @@
 /**
- * Inline script that runs BEFORE React hydration.
- * Reads theme preference from localStorage and applies the correct class,
- * preventing any flash of wrong theme.
+ * Runs BEFORE React hydration. Sets dark class based on localStorage.
+ * Server always renders <html class="dark">, this script removes it if needed.
  */
+const THEME_SCRIPT = `!function(){try{var t=localStorage.getItem('testcolony-theme');if(t==='light')document.documentElement.classList.remove('dark')}catch(e){}}()`;
+
 export function ThemeScript() {
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `
-          (function() {
-            try {
-              var theme = localStorage.getItem('testcolony-theme');
-              if (theme === 'light') {
-                document.documentElement.classList.remove('dark');
-              } else {
-                // Default to dark mode
-                document.documentElement.classList.add('dark');
-                if (!theme) localStorage.setItem('testcolony-theme', 'dark');
-              }
-            } catch(e) {
-              // Fallback to dark
-              document.documentElement.classList.add('dark');
-            }
-          })();
-        `,
-      }}
-    />
-  );
+  return <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />;
 }

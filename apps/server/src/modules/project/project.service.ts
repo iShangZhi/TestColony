@@ -6,6 +6,23 @@ import type { CreateProjectRequest, UpdateProjectRequest } from '@testcolony/sha
 export class ProjectService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async listPublic(page = 1, pageSize = 20) {
+    const [data, total] = await Promise.all([
+      this.prisma.project.findMany({
+        where: { status: { not: 'deleted' } },
+        include: {
+          owner: { select: { id: true, displayName: true, email: true } },
+          _count: { select: { prds: true, testSuites: true, testRuns: true } },
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.project.count({ where: { status: { not: 'deleted' } } }),
+    ]);
+    return { data, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+  }
+
   async list(userId: string, page = 1, pageSize = 20) {
     const [data, total] = await Promise.all([
       this.prisma.project.findMany({
@@ -13,7 +30,10 @@ export class ProjectService {
           status: { not: 'deleted' },
           OR: [{ ownerId: userId }, { members: { some: { userId } } }],
         },
-        include: { owner: { select: { id: true, displayName: true, email: true } } },
+        include: {
+          owner: { select: { id: true, displayName: true, email: true } },
+          _count: { select: { prds: true, testSuites: true, testRuns: true } },
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { updatedAt: 'desc' },

@@ -71,6 +71,15 @@ html, body {
 }
 .agent-node:hover { border-color: rgb(var(--color-border-secondary)); }
 
+/* Fix browser autofill background in dark mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px rgb(var(--color-bg-input)) inset !important;
+  -webkit-text-fill-color: rgb(var(--color-text-primary)) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Animations */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .animate-in { animation: fadeIn 0.4s ease-out; }

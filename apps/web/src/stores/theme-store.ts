@@ -1,35 +1,30 @@
+'use client';
+
 import { create } from 'zustand';
 
 type Theme = 'dark' | 'light';
 
-const getInitialTheme = (): Theme => {
-  if (typeof window === 'undefined') return 'dark';
-  const stored = localStorage.getItem('testcolony-theme');
-  if (stored === 'light' || stored === 'dark') return stored;
-  return 'dark';
-};
+// Client-only init
+let initTheme: Theme = 'dark';
+if (typeof window !== 'undefined') {
+  initTheme = (localStorage.getItem('testcolony-theme') as Theme) || 'dark';
+  // Apply immediately on module load
+  document.documentElement.classList.toggle('dark', initTheme === 'dark');
+}
 
-const applyTheme = (theme: Theme) => {
-  localStorage.setItem('testcolony-theme', theme);
-  if (typeof document === 'undefined') return;
-  if (theme === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-};
-
-export const useThemeStore = create<{ theme: Theme; toggle: () => void; setTheme: (t: Theme) => void }>((set, get) => ({
-  theme: getInitialTheme(),
+export const useThemeStore = create<{
+  theme: Theme;
+  mounted: boolean;
+  toggle: () => void;
+  init: () => void;
+}>((set, get) => ({
+  theme: initTheme,
+  mounted: false,
   toggle: () => {
     const next = get().theme === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
+    document.documentElement.classList.toggle('dark', next === 'dark');
+    localStorage.setItem('testcolony-theme', next);
     set({ theme: next });
   },
-  setTheme: (t) => { applyTheme(t); set({ theme: t }); },
+  init: () => set({ mounted: true }),
 }));
-
-// Apply theme on module load
-if (typeof window !== 'undefined') {
-  applyTheme(getInitialTheme());
-}

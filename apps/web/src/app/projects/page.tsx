@@ -96,12 +96,12 @@ export default function ProjectsPage() {
 
       {/* Empty State */}
       {!isLoading && projects.length === 0 && (
-        <div className="bg-surface-DEFAULT/80 rounded-xl border border-dashed border-surface-border/70 p-16 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-surface-card/50 flex items-center justify-center mx-auto mb-4">
-            <Layers size={28} className="text-slate-500" />
+        <div className="bg-white dark:bg-slate-800/80 rounded-xl border border-dashed border-gray-300 dark:border-slate-700/50 p-16 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-slate-700/50 flex items-center justify-center mx-auto mb-4">
+            <Layers size={28} className="text-gray-400 dark:text-slate-500" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">还没有项目</h3>
-          <p className="text-sm text-slate-400 mb-6 max-w-sm mx-auto">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">还没有项目</h3>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
             创建你的第一个测试项目，上传 PRD 文档，让 AI Agent 帮你生成和执行测试用例
           </p>
           <button

@@ -21,7 +21,12 @@ export class TestRunService {
   async getById(projectId: string, runId: string) {
     const run = await this.prisma.testRun.findFirst({
       where: { id: runId, projectId },
-      include: { results: { include: { testCase: { select: { title: true, priority: true } } } } },
+      include: {
+        results: {
+          include: { testCase: { select: { id: true, title: true, priority: true } } },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
     });
     if (!run) throw new NotFoundException('Test run not found');
     return run;
