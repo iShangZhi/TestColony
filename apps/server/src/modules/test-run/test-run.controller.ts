@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Param, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Req, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { TestRunService } from './test-run.service';
+import { ExecutionOrchestratorService } from '../execution/execution-orchestrator.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Test Runs')
@@ -8,7 +9,10 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('projects/:projectId/runs')
 export class TestRunController {
-  constructor(private readonly testRunService: TestRunService) {}
+  constructor(
+    private readonly testRunService: TestRunService,
+    private readonly executionOrchestrator: ExecutionOrchestratorService,
+  ) {}
 
   @Get()
   async list(
@@ -19,6 +23,21 @@ export class TestRunController {
     return this.testRunService.list(projectId, +page, +pageSize);
   }
 
+  // Start a test run (Main Agent B)
+  @Post()
+  async start(
+    @Param('projectId') projectId: string,
+    @Req() req: any,
+    @Body() dto: { suiteIds: string[]; agent?: string; options?: any },
+  ) {
+    const result = await this.executionOrchestrator.startTestRun(
+      projectId,
+      req.user.sub,
+      dto.options || { suiteIds: dto.suiteIds },
+    );
+    return result;
+  }
+
   @Get(':runId')
   async get(@Param('projectId') projectId: string, @Param('runId') runId: string) {
     return this.testRunService.getById(projectId, runId);
@@ -26,6 +45,7 @@ export class TestRunController {
 
   @Post(':runId/cancel')
   async cancel(@Param('projectId') projectId: string, @Param('runId') runId: string) {
+    await this.executionOrchestrator.cancelTestRun(runId);
     return this.testRunService.cancel(projectId, runId);
   }
 }

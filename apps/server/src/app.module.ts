@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProjectModule } from './modules/project/project.module';
 import { PrdModule } from './modules/prd/prd.module';
+import { TestSuiteModule } from './modules/test-suite/test-suite.module';
 import { TestCaseModule } from './modules/test-case/test-case.module';
 import { TestRunModule } from './modules/test-run/test-run.module';
 import { AgentModule } from './modules/agent/agent.module';
@@ -25,6 +26,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     AuthModule,
     ProjectModule,
     PrdModule,
+    TestSuiteModule,
     TestCaseModule,
     TestRunModule,
     AgentModule,
